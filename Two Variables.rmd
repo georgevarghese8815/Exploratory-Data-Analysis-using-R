@@ -1,0 +1,326 @@
+Lesson 4
+========================================================
+
+***
+
+### Scatterplots and Perceived Audience Size
+Notes: People underestimated their audience size which could be seen through the scatter plot.
+
+***
+
+### Scatterplots
+Notes:
+
+```{r Scatterplots}
+
+facebook <- read.csv("C:/Users/George varghese/Desktop/Analytics/Udacity/EDA_Course_Materials/lesson3/pseudo_facebook.tsv",
+           header = TRUE, sep = "\t")
+
+qplot(x = age, y = friend_count, data = facebook)
+
+
+```
+
+
+### ggplot Syntax
+Notes:
+
+```{r ggplot Syntax}
+
+ggplot(aes(x = age, y = friend_count), data = facebook) + 
+  xlim(13, 90) + 
+  geom_jitter(alpha = 1/20)
+
+ggplot(aes(x = age, y = friend_count), data = facebook) + 
+  xlim(13, 90) + 
+  geom_point(alpha = 1/20, position = position_jitter(h = 0)) + 
+  coord_trans(y = "sqrt")
+
+ggplot(aes(x = age, y = friendships_initiated), data = facebook) +
+  geom_point(alpha = 1/10, position = position_jitter(h = 0)) +
+  coord_trans(y = "sqrt")
+
+
+```
+
+
+### Conditional Means
+Notes:
+
+```{r Conditional Means}
+install.packages("dplyr")
+library(dplyr)
+age_groups <- group_by(facebook, age)
+head(age_groups)
+
+fb.fc_by_age <- summarise(age_groups, 
+                          fcm = mean(friend_count),
+                          fcmed = median(friend_count),
+                          n = n())
+
+fb.fc_by_age <- arrange(fb.fc_by_age, age)
+
+head(fb.fc_by_age)
+
+#Alternate
+facebook %>%
+  group_by(age) %>%
+  summarise(fcm = mean(friend_count),
+            fcmed = median(friend_count),
+            n = n()) %>%
+  arrange(age)
+
+```
+
+Create your plot!
+
+```{r Conditional Means Plot}
+ggplot(aes(x = age, y = fcm), data = fb.fc_by_age) +
+  geom_line()
+
+ggplot(aes(x = age, y = fcm), data = fb.fc_by_age) +
+  geom_point() + geom_path()
+
+
+```
+
+***
+
+### Overlaying Summaries with Raw Data
+Notes:
+
+```{r Overlaying Summaries with Raw Data}
+p1 <- ggplot(aes(x = age, y = friend_count), data = facebook) +
+  geom_point(alpha = 1/20, position = position_jitter(h = 0), color = "orange") + 
+  geom_line(stat = "summary", fun.y = mean) + 
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.1), linetype = 2, color = 'blue') + 
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.9), linetype = 2, color = 'blue') +
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.5), color = 'blue') + 
+  coord_cartesian(xlim = c(0,30), ylim = c(0, 1000))
+
+p2 <- ggplot(aes(x = age, y = friend_count), data = facebook) +
+  geom_point(alpha = 1/20, position = position_jitter(h = 0), color = "orange") + 
+  geom_line(stat = "summary", fun.y = mean) + 
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.1), linetype = 2, color = 'blue') + 
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.9), linetype = 2, color = 'blue') +
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.5), color = 'blue') + 
+  coord_cartesian(xlim = c(30, 60), ylim = c(0, 1000))
+
+p3 <- ggplot(aes(x = age, y = friend_count), data = facebook) +
+  geom_point(alpha = 1/20, position = position_jitter(h = 0), color = "orange") + 
+  geom_line(stat = "summary", fun.y = mean) + 
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.1), linetype = 2, color = 'blue') + 
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.9), linetype = 2, color = 'blue') +
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.5), color = 'blue') + 
+  coord_cartesian(xlim = c(60, 75), ylim = c(0, 1000))
+
+library(gridExtra)
+grid.arrange(p1, p2, p3, ncol=1)
+
+
+# no grids.. all age groups
+ggplot(aes(x = age, y = friend_count), data = facebook) +
+  geom_point(alpha = 1/20, position = position_jitter(h = 0), color = "orange") + 
+  geom_line(stat = "summary", fun.y = mean) + 
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.1), linetype = 2, color = 'blue') + 
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.9), linetype = 2, color = 'blue') +
+  geom_line(stat = "summary", fun.y = quantile, fun.args=list(probs=0.5), color = 'blue') + 
+  coord_cartesian(xlim = c(13, 75), ylim = c(0, 1000))
+```
+
+### Moira: Histogram Summary and Scatterplot
+See the Instructor Notes of this video to download Moira's paper on perceived audience size and to see the final plot.
+
+Notes:
+
+***
+
+### Correlation
+Notes:
+
+```{r Correlation}
+?cor.test
+cor.test(facebook$age, facebook$friend_count, method = "kendall")
+
+with(facebook, cor.test(age, friend_count, method = "pearson"))
+
+```
+
+Look up the documentation for the cor.test function.
+
+What's the correlation between age and friend count? Round to three decimal places.
+Response:
+
+***
+
+### Correlation on Subsets
+Notes:
+
+```{r Correlation on Subsets}
+with(subset(facebook, age <= 70), cor.test(age, friend_count))
+```
+
+***
+
+### Correlation Methods
+Notes: Spearman, Pearson and Kendall
+
+***
+
+## Create Scatterplots
+Notes:
+
+```{r}
+ggplot(data = facebook, aes(x = www_likes_received, y = likes_received)) +
+  geom_point() + 
+  xlim(0, quantile(facebook$www_likes_received, 0.95)) + 
+  ylim(0, quantile(facebook$likes_received, 0.95)) +
+  geom_smooth(method = 'lm', color = 'red')
+  
+```
+
+***
+
+### Strong Correlations
+Notes:
+
+```{r Strong Correlations}
+cor.test(facebook$www_likes_received, facebook$likes_received, method = "pearson")
+
+```
+
+***
+
+### Moira on Correlation
+Notes:
+
+***
+
+### More Caution with Correlation
+Notes:
+
+```{r More Caution With Correlation}
+install.packages('alr3', dependencies = TRUE)
+library(alr3)
+data(Mitchell)
+
+```
+
+Create your plot!
+
+```{r Temp vs Month}
+ggplot(data = Mitchell, aes(x = Month, y = Temp)) +
+  geom_point()
+
+qplot(data = Mitchell, Month, Temp)
+
+```
+
+***
+
+### A New Perspective
+
+What do you notice?
+Response:
+
+Watch the solution video and check out the Instructor Notes!
+Notes:
+
+```{r}
+ggplot(data = Mitchell, aes(x = Month, y = Temp)) +
+  geom_point() +
+  scale_x_discrete(breaks = seq(0, 203, 12))
+
+
+```
+
+
+***
+
+### Understanding Noise: Age to Age Months
+Notes:
+
+```{r Understanding Noise: Age to Age Months}
+ggplot(aes(x = age, y = fcm), data = fb.fc_by_age) + 
+  geom_line()
+
+facebook$age_withMonths <- facebook$age + (12 - facebook$dob_month)/12
+
+
+```
+
+***
+
+### Age with Months Means
+
+```{r Age with Months Means}
+fb.fc_by_ageMonths <- facebook %>%
+  group_by(age_withMonths) %>% summarise(fcm = mean(friend_count),
+                                         fcmed = median(friend_count),
+                                         n = n()) %>%
+  arrange(age_withMonths)
+
+
+#Alternate
+age_groups <- group_by(facebook, age)
+head(age_groups)
+
+fb.fc_by_age <- summarise(age_groups, 
+                          fcm = mean(friend_count),
+                          fcmed = median(friend_count),
+                          n = n())
+
+fb.fc_by_age <- arrange(fb.fc_by_age, age)
+
+```
+
+Programming Assignment
+```{r Programming Assignment}
+
+ggplot(aes(x = age_withMonths, y = fcm), data = fb.fc_by_ageMonths[fb.fc_by_ageMonths$age_withMonths <= 71,]) +
+  geom_point()
+```
+
+***
+
+### Noise in Conditional Means
+
+```{r Noise in Conditional Means}
+
+```
+
+***
+
+### Smoothing Conditional Means
+Notes:
+
+```{r Smoothing Conditional Means}
+p1 <- ggplot(aes(x = age, y = fcm), data = subset(fb.fc_by_age, age < 71)) + 
+  geom_line() + geom_smooth()
+
+p2 <- ggplot(aes(x = age_withMonths, y = fcm), data = fb.fc_by_ageMonths[fb.fc_by_ageMonths$age_withMonths <= 71,]) +
+  geom_line() + geom_smooth()
+
+p3 <- ggplot(aes(x = round(age/5)*5, y = friend_count), data = subset(facebook, age < 71)) + 
+  geom_line(stat = "summary", fun.y = mean)
+
+library(gridExtra)
+grid.arrange(p1, p2, p3, ncol = 1)
+
+```
+
+***
+
+### Which Plot to Choose?
+Notes:
+
+***
+
+### Analyzing Two Variables
+Reflection:
+
+***
+
+Click **KnitHTML** to see all of your hard work and to have an html
+page of this lesson, your answers, and your notes!
+

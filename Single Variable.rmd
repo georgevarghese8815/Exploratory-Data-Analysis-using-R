@@ -1,0 +1,345 @@
+Lesson 3
+========================================================
+
+***
+
+### What to Do First?
+Notes:
+
+***
+
+### Pseudo-Facebook User Data
+Notes:
+
+```{r Pseudo-Facebook User Data}
+
+```
+
+***
+
+### Histogram of Users' Birthdays
+Notes:
+
+```{r Histogram of Users\' Birthdays}
+install.packages('ggplot2')
+library(ggplot2)
+```
+
+***
+
+#### What are some things that you notice about this histogram?
+Response:
+
+***
+
+### Moira's Investigation
+Notes:
+
+***
+
+### Estimating Your Audience Size
+Notes:
+
+***
+
+#### Think about a time when you posted a specific message or shared a photo on Facebook. What was it?
+Response:
+
+#### How many of your friends do you think saw that post?
+Response:
+
+#### Think about what percent of your friends on Facebook see any posts or comments that you make in a month. What percent do you think that is?
+Response:
+
+***
+
+### Perceived Audience Size
+Notes:
+
+***
+### Faceting
+Notes:
+
+```{r Faceting}
+
+```
+
+#### Let’s take another look at our plot. What stands out to you here?
+Response:
+
+***
+
+### Be Skeptical - Outliers and Anomalies
+Notes: 
+
+***
+
+### Moira's Outlier
+Notes:
+1. Eliminating the outliers, makes graphs look better and gives a better picture which is more accurate.
+
+#### Which case do you think applies to Moira’s outlier?
+Response: Bad data about an extreme case
+
+OUtlier data can be good or bad as well. Its upto us to identify them and use them accordingly.
+
+***
+
+
+### Friend Count
+Notes:
+
+#### What code would you enter to create a histogram of friend counts?
+
+```{r Friend Count}
+library(ggplot2)
+qplot(data = facebook, x = facebook$friend_count)
+
+```
+
+#### How is this plot similar to Moira's first plot?
+Response: A lot of data in the left section of the graph between 0-500. And a very few occurences for points more than 1000. This cause the 1st bar to be really big as compared to others.
+
+Its a long tailed data. Or skewed data
+
+***
+
+### Limiting the Axes
+Notes:the parameter 'xlim' is the answer. It limits the x axes.
+
+Another option is to add a layer using scale_x_continuous. The Y axis counterpart is scale_y_continuous
+
+```{r Limiting the Axes}
+qplot(data = facebook, x = facebook$friend_count, xlim = c(500, 1000))
+
+qplot(data = facebook, x = facebook$friend_count) +
+  scale_x_continuous(limits = c(0, 1000))
+
+```
+
+### Exploring with Bin Width
+Notes: 
+
+***
+
+### Adjusting the Bin Width
+Notes:
+```{r}
+qplot(data = facebook, x = friend_count, binwidth = 25) +
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0, 1000, 50)) + scale_y_continuous(breaks = seq(0, 16000, 2000)) + facet_grid(gender ~.)
+
+qplot(data = facebook, x = friend_count, binwidth = 25) +
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0, 1000, 50)) + scale_y_continuous(breaks = seq(0, 16000, 2000)) + facet_wrap(~gender)
+
+# Removing NA
+qplot(data = facebook[!is.na(facebook$gender),], x = friend_count, binwidth = 25) +
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0, 1000, 50)) + scale_y_continuous(breaks = seq(0, 16000, 2000)) + facet_wrap(~gender) 
+
+
+```
+
+
+
+### Faceting Friend Count
+```{r Faceting Friend Count}
+# What code would you add to create a facet the histogram by gender?
+# Add it to the code below.
+qplot(x = friend_count, data = pf, binwidth = 10) +
+  scale_x_continuous(limits = c(0, 1000),
+                     breaks = seq(0, 1000, 50))
+```
+
+***
+
+### Omitting NA Values
+Notes:
+
+```{r Omitting NA Values}
+
+qplot(data = na.omit(facebook), x = friend_count, binwidth = 25) +
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0, 1000, 50)) + scale_y_continuous(breaks = seq(0, 16000, 2000)) + facet_wrap(~gender) 
+
+```
+
+***
+
+### Statistics 'by' Gender
+Notes:
+
+```{r Statistics \'by\' Gender}
+table(facebook$gender)
+by(facebook$friend_count, facebook$gender, summary)
+by()
+```
+
+#### Who on average has more friends: men or women?
+Response: Women
+
+#### What's the difference between the median friend count for women and men?
+Response:
+
+#### Why would the median be a better measure than the mean?
+Response:
+
+***
+
+### Tenure
+Notes:
+
+```{r Tenure}
+qplot(x = tenure, data = facebook, binwidth = 30, color = I('black'), fill = I("#099DD9"))
+qplot(x = tenure/365.5, data = facebook, binwidth = 0.25, color = I('black'), fill = I("#099DD9"),
+      xlab = 'Number of years using Facebook', ylab = 'Number of users in sample') + 
+  scale_x_continuous(breaks = seq(1, 7, 1), limits = c(0, 7))
+
+```
+
+### User Ages
+Notes:
+
+```{r User Ages}
+qplot(data = facebook, x = age, binwidth = 1, color = I("black")) + 
+  scale_x_continuous(breaks = seq(0, 100, 10), limits = c(0, 100))
+
+```
+
+
+### Lada's Money Bag Meme
+Notes: She observed 1 particular meme which kept occuring on particular dates spread over months. The meme was:
+"This month has 5 Fridays, a phenomenon seen online once in 800 years etc......"
+In this she tried to analyse the spread of memes. 
+
+***
+
+### Transforming Data
+Notes:
+
+```{r}
+qplot(data = facebook, x = friend_count)
+
+summary(facebook$friend_count)
+
+summary(log10(facebook$friend_count + 1))
+
+summary(sqrt(facebook$friend_count))
+
+
+#grid layout
+
+p1 <- qplot(x = friend_count, data = facebook, colour = I('black'))
+p2 <- qplot(x = log10(friend_count + 1), data = facebook, colour = I('black'))
+p3 <- qplot(x = sqrt(friend_count), data = facebook, colour = I('black'))
+
+# arrange plots in grid
+grid.arrange(p1, p2, p3, ncol=1)
+
+```
+
+***
+
+### Add a Scaling Layer
+Notes:
+
+```{r Add a Scaling Layer}
+#grid layout using scales - Alternate Solution
+
+p1 <- ggplot(aes(x = friend_count), data = facebook) + geom_histogram()
+p2 <- p1 + scale_x_log10()
+p3 <- p1 + scale_x_sqrt()
+
+grid.arrange(p1, p2, p3, ncol=1)
+```
+
+***
+
+
+### Frequency Polygons
+Notes: Helps to compare distributions
+
+```{r Frequency Polygons}
+qplot(data = facebook[!is.na(facebook$gender),], x = friend_count, binwidth = 10, 
+      geom = "freqpoly", color = gender) +
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0, 1000, 50))
+
+
+qplot(data = facebook[!is.na(facebook$gender),], x = friend_count, y = ..count../sum(..count..),
+      xlab = 'Friend Count', ylab = 'Percentage of users with that friend count',
+      binwidth = 10, geom = "freqpoly", color = gender) +
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0, 1000, 50))
+
+
+```
+
+***
+
+### Likes on the Web
+Notes:
+
+```{r Likes on the Web}
+library(ggplot2)
+
+qplot(data = facebook[!is.na(facebook$gender),], x = www_likes, geom = "freqpoly", color = gender) +
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0, 1000, 50)) +
+  scale_x_log10()
+
+sum(facebook$www_likes[facebook$gender == 'male'], na.rm = TRUE)
+
+by(facebook$www_likes, facebook$gender, sum)
+
+```
+
+
+***
+
+### Box Plots
+Notes:
+
+```{r Box Plots}
+qplot(x = gender, y = friend_count, 
+      geom = 'boxplot', data = facebook[!is.na(facebook$gender),], ylim = c(0, 500)) + 
+  scale_y_continuous(limits = c(0, 1000))
+
+qplot(x = gender, y = friend_count, 
+      geom = 'boxplot', data = facebook[!is.na(facebook$gender),]) + 
+  coord_cartesian(ylim = c(0,250))
+
+by(facebook$friend_count, facebook$gender, sum)
+
+```
+
+#### On average, who initiated more friendships in our sample: men or women?
+Response:
+```{r}
+by(facebook$friendships_initiated, facebook$gender, summary)
+qplot(x = gender, y = friendships_initiated, geom = 'boxplot', 
+      data = facebook[!is.na(facebook$gender),]) + 
+  coord_cartesian(ylim = c(0, 150))
+
+```
+
+
+
+***
+
+### Getting Logical
+Notes:
+
+```{r Getting Logical}
+facebook$mobile_check_in <- NA
+facebook$mobile_check_in <- ifelse(facebook$mobile_likes > 0, 1, 0)
+facebook$mobile_check_in <- factor(facebook$mobile_check_in)
+summary(facebook$mobile_check_in)
+
+```
+
+Response:
+
+***
+
+### Analyzing One Variable
+Reflection:
+
+***
+
+Click **KnitHTML** to see all of your hard work and to have an html
+page of this lesson, your answers, and your notes!
